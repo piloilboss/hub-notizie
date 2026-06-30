@@ -716,10 +716,26 @@ function closeModal() {
 }
 
 function sourceLabelFor(area) {
-  if (area === 'world') return 'Repubblica';
-  if (area === 'music') return 'Rockol';
-  if (area === 'sport') return 'Gazzetta';
+  if (area === 'world') return 'ANSA';
+  if (area === 'music') return 'Rolling Stone';
+  if (area === 'sport') return 'ANSA Sport';
   return '';
+}
+
+function sourceFromUrl(url, fallback) {
+  if (!url) return fallback;
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    if (host.includes('ansa.it')) return 'ANSA';
+    if (host.includes('repubblica.it')) return 'Repubblica';
+    if (host.includes('rollingstone.it')) return 'Rolling Stone';
+    if (host.includes('gazzetta.it')) return 'Gazzetta';
+    if (host.includes('sky.it')) return 'Sky Sport';
+    if (host.includes('rockol.it')) return 'Rockol';
+    return host;
+  } catch (e) {
+    return fallback;
+  }
 }
 
 async function loadNews(manual) {
@@ -741,7 +757,7 @@ async function loadNews(manual) {
     }
 
     const label = sourceLabelFor(currentArea);
-    articles = (data.articles || []).map(a => Object.assign({}, a, { sourceLabel: label }));
+    articles = (data.articles || []).map(a => Object.assign({}, a, { sourceLabel: sourceFromUrl(a.url, label) }));
 
     if (!articles.length) { renderEmpty(); }
     else { renderContent(articles); }
